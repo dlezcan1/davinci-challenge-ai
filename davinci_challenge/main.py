@@ -1,11 +1,13 @@
-from .game import Game
+from game import Game
+from ui import GameApplication
 
 def main(args = None):
-    game = Game()
+    app = GameApplication()
+    app.run()
 
 # main
 
 if __name__ == "__main__":
     main()
 
-# if
+# if __main__

@@ -1,6 +1,3 @@
-from .game import Game, Board, Piece
-
-
 class Player:
     def __init__( self, number: int, num_diarcs: int, num_triarcs: int ):
         """ Player constructor
@@ -33,12 +30,15 @@ class Player:
 # class: Player
 
 class AI( Player ):
-    def __init__( self, number: int, num_diarcs: int, num_triarcs: int, game: Game ):
+    def __init__( self, number: int, num_diarcs: int, num_triarcs: int ):
         super().__init__( number, num_diarcs, num_triarcs )
 
-        self.game = game  # watching the game
-
     # __init__
+
+    def __repr__(self):
+        return "AI" + super().__repr__()
+
+    # __repr__
 
     def playMove( self ):
         """ Plays the next player's move
@@ -46,8 +46,8 @@ class AI( Player ):
             :returns: Move object for the next move to play
         """
         # TODO: AI implementation of move choice
-
-        return Board.Move( 0, Piece.DIARC, self )
+        raise NotImplementedError("AI not implemented yet.")
+        # return Board.Move( 0, Piece.DIARC, self )
 
     # playMove
 

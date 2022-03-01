@@ -2,7 +2,7 @@ from enum import Enum
 from dataclasses import dataclass
 
 # package imports
-from .player import Player
+from player import Player
 
 
 class Piece( Enum ):
@@ -11,7 +11,6 @@ class Piece( Enum ):
 
 
 # enum class: Pieces
-
 
 
 class Board:
@@ -62,7 +61,8 @@ class Board:
             move.player.diarcs -= 1  # remove a piece from their hand
 
         # if
-        elif piece is Piece.TRIARC and self.triarcs[ move.location ] == 0 and move.player.triarcs > 0:
+        elif piece is Piece.TRIARC and self.triarcs[
+            move.location ] == 0 and move.player.triarcs > 0:
             self.triarcs[ move.location ] = move.player.number
             success = True
             move.player.triarcs -= 1  # remove a piece from their hand
@@ -76,7 +76,9 @@ class Board:
     def isFilled( self ):
         """ Check whether the board is filled"""
         return not any(
-            map( lambda p: p == 0, self.diarcs + self.triarcs ) )  # check if any board pieces empty
+                map(
+                    lambda p: p == 0,
+                    self.diarcs + self.triarcs ) )  # check if any board pieces empty
 
     # isFilled
 
