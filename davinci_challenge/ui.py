@@ -130,20 +130,27 @@ class GameApplication:
                 rotation = v * 30
 
             elif 22 <= i < 32:  # columns 2 and 6 out
-                xl = xloc_t - 9 * ((v > 0) * lcolsep - (v < 0) * rcolsep) // 2 +  3*dw//2
-                yl = yloc_t + (i - 22) // 2 * 2 * heightsep + th//2
+                xl = xloc_t - 9 * ((v > 0) * lcolsep - (v < 0) * rcolsep) // 2 + 3 * dw // 2 + 2
+                yl = yloc_t + (i - 22) // 2 * 2 * heightsep + th // 2
                 rotation = -v * 30
 
             elif 32 <= i < 40:  # columns 2 and 6 in
-                pass
+                xl = xloc_t - 13 * (
+                            (v > 0) * lcolsep - (v < 0) * (rcolsep-1)) // 2 + 5 * dw // 2 + v*6 - (v < 0)*2
+                yl = yloc_t + (i - 32) // 2 * 2 * heightsep + th
+                rotation = v * 30
 
             elif 40 <= i < 48:  # columns 1 and 7 out
-                pass
+                xl = xloc_t - 17 * ((v > 0) * lcolsep - (v < 0)*(rcolsep-2))//2 + 7*dw//2 -1
+                yl = yloc_t + (i - 40) // 2 * 2 * heightsep + th
+                rotation = -v*30
 
             elif 48 <= i < 54:  # columns 1 and 7 in
-                pass
+                xl = xloc_t - 21 * ((v > 0)*lcolsep - (v < 0) * (rcolsep-3))//2 + 9*dw//2 + v*2
+                yl = yloc_t + (i - 48)//2 * 2 * heightsep + 3*th//2
+                rotation = v*30
 
-            diarc.update( x=xl, y=yl, rotation=rotation, player=2 )
+            diarc.update( x=xl, y=yl, rotation=rotation )
 
         # for: diarcs
 
