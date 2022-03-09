@@ -20,8 +20,8 @@ class Board:
     # Parameters of the Board
     # number of pieces
     NUM_PIECES = 144
-    NUM_DIARCS = 54
-    NUM_TRIARCS = 90
+    NUM_TRIARCS = 54
+    NUM_DIARCS = 90
 
     @dataclass
     class Move:

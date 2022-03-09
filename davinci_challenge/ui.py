@@ -61,18 +61,18 @@ class GameApplication:
         """ Build the board for playing"""
         # image sizes
         dw, dh = self.diarcs[ 0 ].image.get_size()
-        tw, th = self.triarcs[ 0 ].image.get_size()
+        tw2, th2 = self.triarcs[ 0 ].image.get_size()
 
         # board parameters
         padding = 1
-        top = (self.screen.get_height() - 5 * th) // 2
-        colsep = th * math.cos( 60 )
-        heightsep = (th + padding) // 2
+        top = (self.screen.get_height() - 5 * dh) // 2
+        colsep = dh * math.cos( 60 )
+        heightsep = (dh + padding) // 2
 
-        # triarcs
-        xloc_t = (self.screen.get_width() - tw) // 2
+        # diarcs
+        xloc_t = (self.screen.get_width() - dw) // 2
         yloc_t = top
-        for i, triarc in enumerate( self.triarcs ):
+        for i, diarc in enumerate( self.diarcs ):
             xl, yl, rotation = None, None, None
             v = 1 if i % 2 == 0 else -1
             if 0 <= i < 6:  # column 4
@@ -103,39 +103,39 @@ class GameApplication:
 
             elif 42 <= i < 54:  # rotated columns 3.5, 4.5 angled up
                 xl = xloc_t - (v * colsep) // 2 - 32
-                yl = yloc_t + (i - 42) // 2 * 2 * heightsep + th // 2 - 10
+                yl = yloc_t + (i - 42) // 2 * 2 * heightsep + dh // 2 - 10
                 rotation = -v * 60
 
             elif 54 <= i < 64:  # rotated columns 2.5, 5.5 angled down
                 xl = xloc_t - 3 * (v * colsep) // 2 - 32
-                yl = yloc_t + ((i - 54) // 2 * 2 * heightsep) + th // 2 - 10
+                yl = yloc_t + ((i - 54) // 2 * 2 * heightsep) + dh // 2 - 10
                 rotation = v * 60
 
 
             elif 64 <= i < 74:  # rotated columns 2.5, 5.5 angled up
                 xl = xloc_t - 3 * (v * colsep) // 2 - 32
-                yl = yloc_t + ((i - 64) // 2 * 2 * heightsep) + 2 * th // 2 - 10
+                yl = yloc_t + ((i - 64) // 2 * 2 * heightsep) + 2 * dh // 2 - 10
                 rotation = -v * 60
 
             elif 74 <= i < 82:  # rotated columns 1.5, 6.5 angled down
                 xl = xloc_t - 5 * (v * colsep) // 2 - 32
-                yl = yloc_t + ((i - 74) // 2 * 2 * heightsep) + 2 * th // 2 - 10
+                yl = yloc_t + ((i - 74) // 2 * 2 * heightsep) + 2 * dh // 2 - 10
                 rotation = v * 60
 
             elif 82 <= i < 90:  # rotated columns 1.5, 6.5 angled up
                 xl = xloc_t - 5 * (v * colsep) // 2 - 32
-                yl = yloc_t + ((i - 82) // 2 * 2 * heightsep) + 3 * th // 2 - 10
+                yl = yloc_t + ((i - 82) // 2 * 2 * heightsep) + 3 * dh // 2 - 10
                 rotation = -v * 60
 
-            triarc.update( x=xl, y=yl, rotation=rotation )
+            diarc.update( x=xl, y=yl, rotation=rotation )
 
-        # for: triarcs
+        # for: diarcs
 
-        # diarcs
-        yloc_t += dh // 4
-        lcolsep = dw - 4
-        rcolsep = dw // 4 - 10
-        for i, diarc in enumerate( self.diarcs ):
+        # triarcs
+        yloc_t += th2 // 4
+        lcolsep = tw2 - 4
+        rcolsep = tw2 // 4 - 10
+        for i, triarc in enumerate( self.triarcs ):
             xl, yl, rotation = None, None, None
             v = 1 if i % 2 == 0 else -1
             if 0 <= i < 12:  # columns 3 and 4 out
@@ -144,35 +144,35 @@ class GameApplication:
                 rotation = -v * 30
 
             elif 12 <= i < 22:  # columns 3 and 5 in
-                xl = xloc_t - 5 * ((v > 0) * lcolsep - (v < 0) * rcolsep) // 2 + 2 * dw // 3 - v * 2
-                yl = yloc_t + (i - 12) // 2 * 2 * heightsep + th // 2
+                xl = xloc_t - 5 * ((v > 0) * lcolsep - (v < 0) * rcolsep) // 2 + 2 * tw2 // 3 - v * 2
+                yl = yloc_t + (i - 12) // 2 * 2 * heightsep + dh // 2
                 rotation = v * 30
 
             elif 22 <= i < 32:  # columns 2 and 6 out
-                xl = xloc_t - 9 * ((v > 0) * lcolsep - (v < 0) * rcolsep) // 2 + 3 * dw // 2 + 2
-                yl = yloc_t + (i - 22) // 2 * 2 * heightsep + th // 2
+                xl = xloc_t - 9 * ((v > 0) * lcolsep - (v < 0) * rcolsep) // 2 + 3 * tw2 // 2 + 2
+                yl = yloc_t + (i - 22) // 2 * 2 * heightsep + dh // 2
                 rotation = -v * 30
 
             elif 32 <= i < 40:  # columns 2 and 6 in
                 xl = xloc_t - 13 * (
-                        (v > 0) * lcolsep - (v < 0) * (rcolsep - 1)) // 2 + 5 * dw // 2 + v * 6 - (
+                        (v > 0) * lcolsep - (v < 0) * (rcolsep - 1)) // 2 + 5 * tw2 // 2 + v * 6 - (
                              v < 0) * 2
-                yl = yloc_t + (i - 32) // 2 * 2 * heightsep + th
+                yl = yloc_t + (i - 32) // 2 * 2 * heightsep + dh
                 rotation = v * 30
 
             elif 40 <= i < 48:  # columns 1 and 7 out
                 xl = xloc_t - 17 * (
-                        (v > 0) * lcolsep - (v < 0) * (rcolsep - 2)) // 2 + 7 * dw // 2 - 1
-                yl = yloc_t + (i - 40) // 2 * 2 * heightsep + th
+                        (v > 0) * lcolsep - (v < 0) * (rcolsep - 2)) // 2 + 7 * tw2 // 2 - 1
+                yl = yloc_t + (i - 40) // 2 * 2 * heightsep + dh
                 rotation = -v * 30
 
             elif 48 <= i < 54:  # columns 1 and 7 in
                 xl = xloc_t - 21 * (
-                        (v > 0) * lcolsep - (v < 0) * (rcolsep - 3)) // 2 + 9 * dw // 2 + v * 2
-                yl = yloc_t + (i - 48) // 2 * 2 * heightsep + 3 * th // 2
+                        (v > 0) * lcolsep - (v < 0) * (rcolsep - 3)) // 2 + 9 * tw2 // 2 + v * 2
+                yl = yloc_t + (i - 48) // 2 * 2 * heightsep + 3 * dh // 2
                 rotation = v * 30
 
-            diarc.update( x=xl, y=yl, rotation=rotation )
+            triarc.update( x=xl, y=yl, rotation=rotation )
 
         # for: diarcs
 
