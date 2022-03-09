@@ -54,22 +54,20 @@ class Board:
 
             :return: boolean of whether operation was successful
         """
-        success = False  # operation successful or not
-        if move.piece is Piece.DIARC and self.diarcs[ location ] == 0 and move.player.diarcs > 0:
+
+        valid_move = self.isValidMove(move)  # operation successful or not
+        if move.piece is Piece.DIARC and valid_move:
             self.diarcs[ move.location ] = move.player.number
-            success = True
             move.player.diarcs -= 1  # remove a piece from their hand
 
         # if
-        elif piece is Piece.TRIARC and self.triarcs[
-            move.location ] == 0 and move.player.triarcs > 0:
+        elif move.piece is Piece.TRIARC and valid_move:
             self.triarcs[ move.location ] = move.player.number
-            success = True
             move.player.triarcs -= 1  # remove a piece from their hand
 
         # elif
 
-        return success
+        return valid_move
 
     # playPiece
 
@@ -77,10 +75,23 @@ class Board:
         """ Check whether the board is filled"""
         return not any(
                 map(
-                    lambda p: p == 0,
-                    self.diarcs + self.triarcs ) )  # check if any board pieces empty
+                        lambda p: p == 0,
+                        self.diarcs + self.triarcs ) )  # check if any board pieces empty
 
     # isFilled
+
+    def isValidMove( self, move: Move ):
+        """ Check if the move is valid """
+        if move.piece is Piece.DIARC and self.diarcs[move.location] == 0 and move.player.diarcs > 0:
+            return True
+
+        elif move.piece is Piece.TRIARC and self.triarcs[move.location] == 0 and move.player.triarcs > 0:
+            return True
+
+        else:
+            return False
+
+    # isValidMove
 
 
 # class: Board
@@ -117,6 +128,15 @@ class Game:
 
     # __init__
 
+    @property
+    def playerOnDeck( self ):
+        if self.turn == 1:
+            return self.player1
+        else:
+            return self.player2
+
+    # property: playerOnDeck
+
     def checkScore( self, location: int, piece: Piece, player: Player ):
         """ Function to check if a play was a scoring play
 
@@ -131,30 +151,43 @@ class Game:
 
     # checkScore
 
+    def isValidMove( self, move: Board.Move ):
+        """ Check if move is valid"""
+        # check board if move is valid
+        return self.board.isValidMove(move)
+
+    # isValidMove
+
     def play( self ):
         """ Plays the game
 
         """
         # TODO: implement game playing
+        raise NotImplementedError("play is not implemented here.")
         while not self.board.isFilled():
-            self.handleTurn()
+            self.updateTurn()
 
         # while
 
     # play
 
-    def handleTurn( self ):
-        # TODO: implement turn handler
-        # Do we have this perform the input or should the self.play method handle it?
-        # update the turn counter
-        self.__update_turn()
+    def playPiece( self, location: int, piece: Piece ):
+        """ Play a piece """
+        move = Board.Move( location, piece, self.playerOnDeck )
+        success = self.board.playPiece( move )
+        # check turn
+        # update the turn
+        if success:
+            self.updateTurn()
 
-    # handleTurn
+        return success
 
-    def __update_turn( self ):
+    # playPiece
+
+    def updateTurn( self ):
         """ Function to update the turn counter """
         self.turn = self.turn % 2 + 1
 
-    # __update_turn
+    # updateTurn
 
 # class: Game

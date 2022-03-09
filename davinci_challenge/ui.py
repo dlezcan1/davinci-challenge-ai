@@ -1,8 +1,12 @@
+from typing import List
+
 import pygame as pg
 import math
+import numpy as np
 
 # package imports
-from game import Game, Board
+import game
+from game import Game, Board, Piece
 import sprites
 
 
@@ -36,7 +40,17 @@ class GameApplication:
         # build the board
         self.buildBoard()
 
+        # setup the font
+        self._titleFont = pg.font.SysFont( 'arialblack', 50 )
+        self._elementFont = pg.font.SysFont( 'arialblack', 24 )
+
     # __init__
+
+    @property
+    def pieces( self ) -> List[ sprites.sprite_pieces.SpritePiece ]:
+        return self.triarcs + self.diarcs
+
+    # property: pieces
 
     def buildBoard( self ):
         """ Build the board for playing"""
@@ -46,7 +60,7 @@ class GameApplication:
 
         # board parameters
         padding = 1
-        top = (self.screen.get_height() - 6 * th) // 2
+        top = (self.screen.get_height() - 5 * th) // 2
         colsep = th * math.cos( 60 )
         heightsep = (th + padding) // 2
 
@@ -136,19 +150,22 @@ class GameApplication:
 
             elif 32 <= i < 40:  # columns 2 and 6 in
                 xl = xloc_t - 13 * (
-                            (v > 0) * lcolsep - (v < 0) * (rcolsep-1)) // 2 + 5 * dw // 2 + v*6 - (v < 0)*2
+                        (v > 0) * lcolsep - (v < 0) * (rcolsep - 1)) // 2 + 5 * dw // 2 + v * 6 - (
+                             v < 0) * 2
                 yl = yloc_t + (i - 32) // 2 * 2 * heightsep + th
                 rotation = v * 30
 
             elif 40 <= i < 48:  # columns 1 and 7 out
-                xl = xloc_t - 17 * ((v > 0) * lcolsep - (v < 0)*(rcolsep-2))//2 + 7*dw//2 -1
+                xl = xloc_t - 17 * (
+                        (v > 0) * lcolsep - (v < 0) * (rcolsep - 2)) // 2 + 7 * dw // 2 - 1
                 yl = yloc_t + (i - 40) // 2 * 2 * heightsep + th
-                rotation = -v*30
+                rotation = -v * 30
 
             elif 48 <= i < 54:  # columns 1 and 7 in
-                xl = xloc_t - 21 * ((v > 0)*lcolsep - (v < 0) * (rcolsep-3))//2 + 9*dw//2 + v*2
-                yl = yloc_t + (i - 48)//2 * 2 * heightsep + 3*th//2
-                rotation = v*30
+                xl = xloc_t - 21 * (
+                        (v > 0) * lcolsep - (v < 0) * (rcolsep - 3)) // 2 + 9 * dw // 2 + v * 2
+                yl = yloc_t + (i - 48) // 2 * 2 * heightsep + 3 * th // 2
+                rotation = v * 30
 
             diarc.update( x=xl, y=yl, rotation=rotation )
 
@@ -156,17 +173,52 @@ class GameApplication:
 
     # buildBoard
 
+    def handleMouseEvent( self, event: pg.event.Event ):
+        """ This is a function to handle the mouse event """
+        if event.type == pg.MOUSEMOTION:
+            (x, y) = event.pos
+
+            # unhover all pieces
+            for piece in self.pieces:
+                piece.update( hovered=False )
+
+            # check for colliding pieces
+            update_piece, _ = self.selectPiece( x, y )
+
+            if update_piece is not None:
+                update_piece.update( hovered=True )
+
+        # if: MouseMotion
+
+        if event.type == pg.MOUSEBUTTONDOWN:
+            (x, y) = event.pos
+
+            update_piece, update_piece_idx = self.selectPiece( x, y )
+
+            # play the piece
+            if update_piece is not None:
+                self.playPiece( update_piece.pieceType, update_piece_idx )
+
+        # if: MouseButtonDown
+
+    # handleMouseEvent
+
     def run( self ):
         """ Run the game """
         run = True
         while run:
             # handle the events
             for event in pg.event.get():
-                self.clock.tick( self.FPS )  # control framerate
+                self.clock.tick( self.FPS )  # control frame-rate
+                # print( f"Current FPS: {self.clock.get_fps()}" )
                 if event.type == pg.QUIT:
                     run = False
 
-                # if
+                elif event.type in [ pg.MOUSEWHEEL, pg.MOUSEMOTION, pg.MOUSEBUTTONUP,
+                                     pg.MOUSEBUTTONDOWN ]:
+                    self.handleMouseEvent( event )
+
+                # render at the end of the loop
                 self.render()
 
         # while
@@ -175,13 +227,155 @@ class GameApplication:
     # run
 
     def render( self ):
+        # blit the background
         self.screen.blit( self.background, (0, 0) )
 
-        for piece in self.triarcs + self.diarcs:
+        # blit the game interface
+        self.renderGameInterface()
+
+        # blit the pieces onto the screen
+        for piece in self.pieces:
             piece.blit( self.screen )
 
         pg.display.update()
 
     # render
+
+    def playPiece( self, pieceType: Piece, pieceIndex: int ):
+        """ Play the current piece from the piece type and index """
+        playerOnDeck = self.game.playerOnDeck
+        success = self.game.playPiece( pieceIndex, pieceType )
+
+        # update the board visualization
+        if pieceType == Piece.DIARC and success:
+            self.diarcs[ pieceIndex ].update( player=playerOnDeck.number )
+
+        elif pieceType == Piece.TRIARC and success:
+            self.triarcs[ pieceIndex ].update( player=playerOnDeck.number )
+
+        # play the piece in the game
+
+    # playPiece
+
+    def selectPiece( self, x, y ):
+        """ Get the current Piece under at position x, y"""
+        # initialization
+        min_dist = float( "inf" )
+        select_piece = None
+        select_piece_idx = None
+
+        # go over triarcs
+        for i, piece in enumerate( self.triarcs ):
+            if piece.rect.collidepoint( x, y ):
+                d = piece.distanceFromCenter( x, y )
+                if d < min_dist:
+                    min_dist = d
+                    select_piece = piece
+                    select_piece_idx = i
+
+                # if
+            # if
+        # for
+
+        # go over diarcs
+        for i, piece in enumerate( self.diarcs ):
+            if piece.rect.collidepoint( x, y ):
+                d = piece.distanceFromCenter( x, y )
+                if d < min_dist:
+                    min_dist = d
+                    select_piece = piece
+                    select_piece_idx = i
+
+                # if
+            # if
+        # for
+
+        return select_piece, select_piece_idx
+
+    def renderGameInterface( self ):
+        """ Draw the scores and piece counts """
+        # get screen size
+        screen_W, screen_H = self.screen.get_size()
+
+        # blit the title
+        title = self._titleFont.render( "DaVinci's Challenge", True, (255, 255, 255) )
+        self.screen.blit( title, ((screen_W - title.get_width()) // 2, 10) )
+
+        # player piece counts and scores
+        rect_buffer = (10, 15)
+        player1Diarcs = self._elementFont.render(
+                f"Diarcs: {self.game.player1.diarcs:2d}", True, (255, 255, 255) )
+        player1Triarcs = self._elementFont.render(
+                f"Triarcs: {self.game.player1.triarcs:2d}", True, (255, 255, 255) )
+        player1Score = self._elementFont.render(
+                f"Score: {self.game.player1Score:3d}", True, (255, 255, 255) )
+        p1_maxWidth = max(
+                [ player1Diarcs.get_width(), player1Triarcs.get_width(),
+                  player1Score.get_width() ] )
+        player1Rect = pg.Rect(
+                10 - rect_buffer[ 0 ] // 2, 30 + title.get_height() - rect_buffer[ 1 ] // 2,
+                p1_maxWidth + rect_buffer[ 0 ],
+                player1Triarcs.get_height() + player1Triarcs.get_height() + player1Score.get_height() +
+                rect_buffer[ 1 ] )
+
+        player2Diarcs = self._elementFont.render(
+                f"Diarcs: {self.game.player2.diarcs:2d}", True, (255, 255, 255) )
+        player2Triarcs = self._elementFont.render(
+                f"Triarcs: {self.game.player2.triarcs:2d}", True, (255, 255, 255) )
+        player2Score = self._elementFont.render(
+                f"Score: {self.game.player2Score:3d}", True, (255, 255, 255) )
+        p2_maxWidth = max(
+                [ player2Diarcs.get_width(), player2Triarcs.get_width(),
+                  player2Score.get_width() ] )
+        player2Rect = pg.Rect(
+                screen_W - rect_buffer[ 0 ] // 2 - p2_maxWidth - 10,
+                30 + title.get_height() - rect_buffer[ 1 ] // 2,
+                p2_maxWidth + rect_buffer[ 0 ],
+                player2Triarcs.get_height() + player2Triarcs.get_height() + player2Score.get_height() +
+                rect_buffer[ 1 ] )
+
+        # draw player piece counts and scores
+        pg.draw.rect( self.screen, (0, 0, 255), player1Rect )
+        self.screen.blit(
+                player1Diarcs, tuple(
+                        pos + buff // 2 + offset for pos, buff, offset in
+                        zip(
+                                player1Rect.topleft, rect_buffer,
+                                (p1_maxWidth - player1Diarcs.get_width(), 0) ) ) )
+        self.screen.blit(
+                player1Triarcs, tuple(
+                        pos + buff // 2 + offset for pos, buff, offset in
+                        zip(
+                                player1Rect.topleft, rect_buffer,
+                                (p1_maxWidth - player1Triarcs.get_width(), player1Diarcs.get_height()) ) ) )
+        self.screen.blit(
+                player1Score,
+                tuple(
+                        pos + buff // 2 + offset for pos, buff, offset in
+                        zip(
+                                player1Rect.topleft, rect_buffer,
+                                (p1_maxWidth - player1Score.get_width(), player1Diarcs.get_height() + player1Triarcs.get_height()) ) ) )
+
+        pg.draw.rect( self.screen, (255, 0, 0), player2Rect )
+        self.screen.blit(
+                player2Diarcs, tuple(
+                        pos + buff // 2 + offset for pos, buff, offset in
+                        zip( player2Rect.topleft, rect_buffer,
+                             (p2_maxWidth - player2Diarcs.get_width(), 0)) ) )
+        self.screen.blit(
+                player2Triarcs, tuple(
+                        pos + buff // 2 + offset for pos, buff, offset in
+                        zip(
+                                player2Rect.topleft, rect_buffer,
+                                (p2_maxWidth - player2Triarcs.get_width(), player2Diarcs.get_height()) ) ) )
+        self.screen.blit(
+                player2Score,
+                tuple(
+                        pos + buff // 2 + offset for pos, buff, offset in
+                        zip(
+                                player2Rect.topleft, rect_buffer,
+                                (p2_maxWidth - player2Score.get_width(), player2Diarcs.get_height() + player2Triarcs.get_height()) ) ) )
+
+    # renderGameInterface
 
 # class: GameApplication
