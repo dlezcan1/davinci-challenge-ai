@@ -347,34 +347,39 @@ class GameApplication:
                         pos + buff // 2 + offset for pos, buff, offset in
                         zip(
                                 player1Rect.topleft, rect_buffer,
-                                (p1_maxWidth - player1Triarcs.get_width(), player1Diarcs.get_height()) ) ) )
+                                (p1_maxWidth - player1Triarcs.get_width(),
+                                 player1Diarcs.get_height()) ) ) )
         self.screen.blit(
                 player1Score,
                 tuple(
                         pos + buff // 2 + offset for pos, buff, offset in
                         zip(
                                 player1Rect.topleft, rect_buffer,
-                                (p1_maxWidth - player1Score.get_width(), player1Diarcs.get_height() + player1Triarcs.get_height()) ) ) )
+                                (p1_maxWidth - player1Score.get_width(),
+                                 player1Diarcs.get_height() + player1Triarcs.get_height()) ) ) )
 
         pg.draw.rect( self.screen, (255, 0, 0), player2Rect )
         self.screen.blit(
                 player2Diarcs, tuple(
                         pos + buff // 2 + offset for pos, buff, offset in
-                        zip( player2Rect.topleft, rect_buffer,
-                             (p2_maxWidth - player2Diarcs.get_width(), 0)) ) )
+                        zip(
+                            player2Rect.topleft, rect_buffer,
+                            (p2_maxWidth - player2Diarcs.get_width(), 0) ) ) )
         self.screen.blit(
                 player2Triarcs, tuple(
                         pos + buff // 2 + offset for pos, buff, offset in
                         zip(
                                 player2Rect.topleft, rect_buffer,
-                                (p2_maxWidth - player2Triarcs.get_width(), player2Diarcs.get_height()) ) ) )
+                                (p2_maxWidth - player2Triarcs.get_width(),
+                                 player2Diarcs.get_height()) ) ) )
         self.screen.blit(
                 player2Score,
                 tuple(
                         pos + buff // 2 + offset for pos, buff, offset in
                         zip(
                                 player2Rect.topleft, rect_buffer,
-                                (p2_maxWidth - player2Score.get_width(), player2Diarcs.get_height() + player2Triarcs.get_height()) ) ) )
+                                (p2_maxWidth - player2Score.get_width(),
+                                 player2Diarcs.get_height() + player2Triarcs.get_height()) ) ) )
 
     # renderGameInterface
 
