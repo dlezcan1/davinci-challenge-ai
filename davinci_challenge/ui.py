@@ -9,8 +9,13 @@ import game
 from game import Game, Board, Piece
 import sprites
 
+# colors
+COLOR_WHITE = (255, 255, 255)
+COLOR_BLUE = (0, 0, 255)
+COLOR_RED = (255, 0, 0)
+COLOR_GRAY = (125, 125, 125)
 
-# TODO: pygame game application
+
 class GameApplication:
     WIDTH, HEIGHT = 750, 750
     FPS = 30  # frames per second
@@ -26,7 +31,7 @@ class GameApplication:
         # setup background
         self.background = pg.Surface( self.screen.get_size() )
         self.background = self.background.convert()
-        self.background.fill( (125, 125, 125) )
+        self.background.fill( COLOR_GRAY )
 
         # FPS clock
         self.clock = pg.time.Clock()
@@ -47,7 +52,7 @@ class GameApplication:
     # __init__
 
     @property
-    def pieces( self ) -> List[ sprites.sprite_pieces.SpritePiece ]:
+    def pieces( self ) -> List[ sprites.SpritePiece ]:
         return self.triarcs + self.diarcs
 
     # property: pieces
@@ -241,17 +246,16 @@ class GameApplication:
 
     # render
 
-    def playPiece( self, piece: sprites.SpritePiece, pieceIndex: int ):
+    def playPiece( self, piece: sprites.SpritePiece, piece_index: int ):
         """ Play the current piece from the piece type and index """
         playerOnDeck = self.game.playerOnDeck
 
         # player the piece
-        success = self.game.playPiece( pieceIndex, piece.pieceType )
+        success = self.game.playPiece( piece_index, piece.pieceType )
 
         # update the board visualization
         if success:
-            piece.update(player=playerOnDeck.number)
-
+            piece.update( player=playerOnDeck.number )
 
     # playPiece
 
@@ -296,17 +300,17 @@ class GameApplication:
         screen_W, screen_H = self.screen.get_size()
 
         # blit the title
-        title = self._titleFont.render( "DaVinci's Challenge", True, (255, 255, 255) )
+        title = self._titleFont.render( "DaVinci's Challenge", True, COLOR_WHITE )
         self.screen.blit( title, ((screen_W - title.get_width()) // 2, 10) )
 
         # player piece counts and scores
         rect_buffer = (10, 15)
         player1Diarcs = self._elementFont.render(
-                f"Diarcs: {self.game.player1.diarcs:2d}", True, (255, 255, 255) )
+                f"Diarcs: {self.game.player1.diarcs:2d}", True, COLOR_WHITE )
         player1Triarcs = self._elementFont.render(
-                f"Triarcs: {self.game.player1.triarcs:2d}", True, (255, 255, 255) )
+                f"Triarcs: {self.game.player1.triarcs:2d}", True, COLOR_WHITE )
         player1Score = self._elementFont.render(
-                f"Score: {self.game.player1Score:3d}", True, (255, 255, 255) )
+                f"Score: {self.game.player1Score:3d}", True, COLOR_WHITE )
         p1_maxWidth = max(
                 [ player1Diarcs.get_width(), player1Triarcs.get_width(),
                   player1Score.get_width() ] )
@@ -317,11 +321,11 @@ class GameApplication:
                 rect_buffer[ 1 ] )
 
         player2Diarcs = self._elementFont.render(
-                f"Diarcs: {self.game.player2.diarcs:2d}", True, (255, 255, 255) )
+                f"Diarcs: {self.game.player2.diarcs:2d}", True, COLOR_WHITE )
         player2Triarcs = self._elementFont.render(
-                f"Triarcs: {self.game.player2.triarcs:2d}", True, (255, 255, 255) )
+                f"Triarcs: {self.game.player2.triarcs:2d}", True, COLOR_WHITE )
         player2Score = self._elementFont.render(
-                f"Score: {self.game.player2Score:3d}", True, (255, 255, 255) )
+                f"Score: {self.game.player2Score:3d}", True, COLOR_WHITE )
         p2_maxWidth = max(
                 [ player2Diarcs.get_width(), player2Triarcs.get_width(),
                   player2Score.get_width() ] )
@@ -361,8 +365,8 @@ class GameApplication:
                 player2Diarcs, tuple(
                         pos + buff // 2 + offset for pos, buff, offset in
                         zip(
-                            player2Rect.topleft, rect_buffer,
-                            (p2_maxWidth - player2Diarcs.get_width(), 0) ) ) )
+                                player2Rect.topleft, rect_buffer,
+                                (p2_maxWidth - player2Diarcs.get_width(), 0) ) ) )
         self.screen.blit(
                 player2Triarcs, tuple(
                         pos + buff // 2 + offset for pos, buff, offset in
