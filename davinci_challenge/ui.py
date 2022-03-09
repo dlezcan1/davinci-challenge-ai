@@ -197,7 +197,7 @@ class GameApplication:
 
             # play the piece
             if update_piece is not None:
-                self.playPiece( update_piece.pieceType, update_piece_idx )
+                self.playPiece( update_piece, update_piece_idx )
 
         # if: MouseButtonDown
 
@@ -241,19 +241,17 @@ class GameApplication:
 
     # render
 
-    def playPiece( self, pieceType: Piece, pieceIndex: int ):
+    def playPiece( self, piece: sprites.SpritePiece, pieceIndex: int ):
         """ Play the current piece from the piece type and index """
         playerOnDeck = self.game.playerOnDeck
-        success = self.game.playPiece( pieceIndex, pieceType )
+
+        # player the piece
+        success = self.game.playPiece( pieceIndex, piece.pieceType )
 
         # update the board visualization
-        if pieceType == Piece.DIARC and success:
-            self.diarcs[ pieceIndex ].update( player=playerOnDeck.number )
+        if success:
+            piece.update(player=playerOnDeck.number)
 
-        elif pieceType == Piece.TRIARC and success:
-            self.triarcs[ pieceIndex ].update( player=playerOnDeck.number )
-
-        # play the piece in the game
 
     # playPiece
 

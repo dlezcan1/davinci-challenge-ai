@@ -1,1 +1,1 @@
-from .sprite_pieces import SpriteDiarc, SpriteTriarc
+from .sprite_pieces import SpritePiece, SpriteDiarc, SpriteTriarc
