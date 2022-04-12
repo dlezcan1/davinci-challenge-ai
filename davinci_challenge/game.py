@@ -65,7 +65,8 @@ class Board:
 
     # isValidMove
 
-    def getRowColumn( self, piece: Piece, location: int ):
+    @staticmethod
+    def getRowColumn( piece: Piece, location: int ):
         """ Get the row and the column of the piece
 
             Diarc columns span from 0-12 (13 columns)
@@ -107,8 +108,8 @@ class Board:
         """
         row, col = None, None
         if piece is Piece.DIARC:
-            if 0 <= location < 6:  # column 7
-                col = 7
+            if 0 <= location < 6:  # column 6
+                col = 6
                 row = location
 
             elif 6 <= location < 16:  # columns 4 and 8
@@ -145,9 +146,9 @@ class Board:
 
             elif 82 <= location < 90:  # columns 1 and 11 angled up
                 col = 1 if location % 2 == 0 else 11
-                row = 2 * ((location - 74) // 2) + 1
+                row = 2 * ((location - 82) // 2) + 1
 
-        # if
+        # if: diarc
         elif piece is Piece.TRIARC:
             if 0 <= location < 12:  # columns 5 and 6
                 col = 5 if location % 2 == 0 else 6
@@ -173,11 +174,119 @@ class Board:
                 col = 0 if location % 2 == 0 else 11
                 row = (location - 48) // 2
 
-        # elif
+        # elif: triarc
 
         return row, col
 
     # getRowColumn
+
+    @staticmethod
+    def rowColumnToIndex( piece: Piece, row: int, col: int ):
+        """ Convert the row-column format to a list index
+
+            :returns list index of the point. None if not found
+
+        """
+        location = None
+
+        if col == 0:
+            if piece is Piece.DIARC:
+                location = 2 * row + 24
+            elif piece is Piece.TRIARC:
+                location = 2 * row + 48
+        # if
+        elif col == 1:
+            if piece is Piece.DIARC:
+                if row % 2 == 0:  # angled down
+                    location = row + 74
+                else:  # angled up
+                    location = row + 82 - 1
+            elif piece is Piece.TRIARC:
+                location = 2 * row + 40
+        # elif
+        elif col == 2:
+            if piece is Piece.DIARC:
+                location = 2 * row + 16
+            elif piece is Piece.TRIARC:
+                location = 2 * row + 32
+        # elif
+        elif col == 3:
+            if piece is Piece.DIARC:
+                if row % 2 == 0:  # angled down
+                    location = row + 54
+                else:  # angled up
+                    location = row + 64 - 1
+            elif piece is Piece.TRIARC:
+                location = 2 * row + 22
+        # elif
+        elif col == 4:
+            if piece is Piece.DIARC:
+                location = 2 * row + 6
+            elif piece is Piece.TRIARC:
+                location = 2 * row + 12
+        # elif
+        elif col == 5:
+            if piece is Piece.DIARC:
+                if row % 2 == 0:  # angled down
+                    location = row + 30
+                else:  # angled up
+                    location = row + 42 - 1
+            elif piece is Piece.TRIARC:
+                location = 2 * row
+        # elif
+        elif col == 6:
+            if piece is Piece.DIARC:
+                location = row
+            elif piece is Piece.TRIARC:
+                location = 2 * row + 1
+        # elif
+        elif col == 7:
+            if piece is Piece.DIARC:
+                if row % 2 == 0:  # angled down
+                    location = row + 30 + 1
+                else:  # angled up
+                    location = row + 42 - 1 + 1
+            elif piece is Piece.TRIARC:
+                location = 2 * row + 12 + 1
+        # elif
+        elif col == 8:
+            if piece is Piece.DIARC:
+                location = 2 * row + 6 + 1
+            elif piece is Piece.TRIARC:
+                location = 2 * row + 22 + 1
+        # elif
+        elif col == 9:
+            if piece is Piece.DIARC:
+                if row % 2 == 0:  # angled down
+                    location = row + 54 + 1
+                else:  # angled up
+                    location = row + 64 - 1 + 1
+            elif piece is Piece.TRIARC:
+                location = 2 * row + 32 + 1
+        # elif
+        elif col == 10:
+            if piece is Piece.DIARC:
+                location = 2 * row + 16 + 1
+            elif piece is Piece.TRIARC:
+                location = 2 * row + 40 + 1
+        # elif
+        elif col == 11:
+            if piece is Piece.DIARC:
+                if row % 2 == 0:  # angled down
+                    location = row + 74 + 1
+                else:  # angled up
+                    location = row + 82 - 1 + 1
+            elif piece is Piece.TRIARC:
+                location = 2 * row + 48 + 1
+        # elif
+        elif col == 12 and piece is Piece.DIARC:
+            location = 2 * row + 24 + 1
+
+        # elif: DIARC
+
+        return location
+
+    # rowColumnToIndex
 
     def playPiece( self, move: Move ):
         """ Player plays a piece on the board
