@@ -1,6 +1,11 @@
 from enum import Enum
 from dataclasses import dataclass
 
+from typing import (
+    List,
+    Tuple,
+)
+
 # package imports
 from player import Player
 
@@ -16,6 +21,8 @@ class Piece( Enum ):
 class Board:
     """ Class implementation of the board game
 
+        Indexing of the board starts from (0,0) for both pieces to be from the top-right to the board
+        and increase going down and to the left
     """
     # Parameters of the Board
     # number of pieces
@@ -54,14 +61,21 @@ class Board:
 
     def isValidMove( self, move: Move ):
         """ Check if the move is valid """
-        if move.piece is Piece.DIARC and self.diarcs[
-            move.location ] == 0 and move.player.diarcs > 0:
+        if (
+            (move.piece is Piece.DIARC)
+            and (self.diarcs[move.location ] == 0)
+            and (move.player.diarcs > 0)
+        ):
             return True
-        elif move.piece is Piece.TRIARC and self.triarcs[
-            move.location ] == 0 and move.player.triarcs > 0:
+        
+        if (
+            (move.piece is Piece.TRIARC)
+            and (self.triarcs[move.location ] == 0)
+            and (move.player.triarcs > 0)
+        ):
             return True
-        else:
-            return False
+
+        return False
 
     # isValidMove
 
@@ -359,6 +373,49 @@ class Game:
             return self.player2
 
     # property: playerOnDeck
+    
+    def _checkListofLocationsScores(
+            self, 
+            check_piece_row_columns: List[Tuple[Piece, int, int]], 
+            player: Player = None,
+        ):
+        check_indices = [ 
+            Board.rowColumnToIndex( piece, row, col ) 
+            for piece, row, col in
+            check_piece_row_columns
+        ]
+
+        # check if
+        does_score = True
+        for idx, (piece, row, col) in zip(check_indices, check_piece_row_columns):
+            if idx is None:  # not a valid piece
+                does_score = False
+                break
+
+            # if
+
+            player_piece_num = self.board.diarcs[idx] if piece is Piece.DIARC else self.board.triarcs[idx]
+
+            if (
+                (player is not None) 
+                and ( player_piece_num != player.number)
+            ):  # not a piece already played by other players
+                does_score = False
+                break
+
+            # if
+            elif (
+                (player is None)
+                and self.board.diarcs[idx] not in [self.player1.number, self.player2.number]
+            ):
+                does_score = False
+                break
+
+            # elif
+            
+        # for
+
+        return does_score
 
     def checkScore( self, move: Board.Move ):
         """ Function to check if a play was a scoring play
@@ -367,15 +424,17 @@ class Game:
 
             :return: total score of a particular move
         """
-
-        # check triangles
+        if not self.isValidMove(move):
+            return 0
+        
+        score = 0
         if move.piece is Piece.DIARC:
-            value = self.checkScoreDiarcPiece( move )
+            score += self.checkScoreDiarcPiece( move )
 
         else:
-            value = self.checkScoreTriarcPiece( move )
+            score += self.checkScoreTriarcPiece( move )
 
-        return value
+        return score
 
     # checkScore
 
@@ -386,14 +445,284 @@ class Game:
 
             :return: total score of a particular move
         """
-        loc = move.location
+        score = 0
 
-        # check for triangles
-        check_indices = [ ]
+        # add scores
+        score += self.checkScoreDiarcPiece_Triangle( move )
+        score += self.checkScoreDiarcPiece_Eye( move )
+        score += self.checkScoreDiarcPiece_Gem( move )
+        score += self.checkScoreDiarcPiece_Flower( move )
+        score += self.checkScoreDiarcPiece_Circle( move )
+        score += self.checkScoreDiarcPiece_Hourglass( move )
+        score += self.checkScoreDiarcPiece_Diamond( move )
 
-        return 0
+        return score
 
     # checkScoreDiarcPiece
+
+    def checkScoreDiarcPiece_Circle( self, move: Board.Move ):
+        """ Check if any points are added from Circle arrangement
+            after placing a Diarc
+
+        """
+        # check if it is a valid move
+        if not self.board.isValidMove( move ):
+            return 0
+
+        # if
+        elif move.piece is not Piece.DIARC:
+            return 0
+
+        # elif
+
+        # TODO: implement valid moves
+
+        # check valid moves
+        score = 0
+
+        return score
+
+    # checkScoreDiarcPiece_Circle
+
+    def checkScoreDiarcPiece_Diamond( self, move: Board.Move ):
+        """ Check if any points are added from Diamond arrangement
+            after placing a Diarc
+
+        """
+        # check if it is a valid move
+        if not self.board.isValidMove( move ):
+            return 0
+
+        # if
+        elif move.piece is not Piece.DIARC:
+            return 0
+
+        # elif
+
+        row, col = self.board.getRowColumn(move.piece, move.location)
+
+        if col % 2 == 0:
+            check_locations = [
+                (Piece.TRIARC, row, 11 - col),
+                (Piece.TRIARC, row, 12 - col),
+            ]
+
+        else: # diagonal triarc
+            if col < 6:
+                if row % 2 == 0: # bottom-left to top-right slanted dirarc
+                    check_locations = [
+                        (Piece.TRIARC, row//2 - 1, col),
+                        (Piece.TRIARC, row//2, col),
+                    ]
+                else:
+                    check_locations = [
+                        (Piece.TRIARC, row, 11 - col),
+                        (Piece.TRIARC, row, 12 - col),
+                    ]
+
+            elif col > 6:
+                if row % 2 == 0:
+                    check_locations = [
+                        (Piece.TRIARC, row//2 - 1, 12 - col),
+                        (Piece.TRIARC, row//2, 11 - col),
+                    ]
+
+                else: # bottom-left to top-right slanted dirarc
+                    check_locations = [
+                        (Piece.TRIARC, (row - 1)//2, 11 - col),
+                        (Piece.TRIARC, (row - 1)//2, 12 - col),
+                    ]
+
+        # check valid moves
+        score = 0
+        if self._checkListofLocationsScores(check_locations, player=move.player):
+            score += self.POINT_DIAMOND
+
+        return score
+
+    # checkScoreDiarcPiece_Diamond
+
+    def checkScoreDiarcPiece_Eye( self, move: Board.Move ):
+        """ Check if any points are added from Eye arrangement
+            after placing a Diarc
+
+        """
+        # check if it is a valid move
+        if not self.board.isValidMove( move ):
+            return 0
+
+        # if
+        elif move.piece is not Piece.DIARC:
+            return 0
+
+        # elif
+
+        # TODO: implement valid moves
+
+        # check valid moves
+        score = 0
+
+        return score
+
+    # checkScoreDiarcPiece_Eye
+
+    def checkScoreDiarcPiece_Flower( self, move: Board.Move ):
+        """ Check if any points are added from Flower arrangement
+            after placing a Diarc
+
+        """
+        # check if it is a valid move
+        if not self.board.isValidMove( move ):
+            return 0
+
+        # if
+        elif move.piece is not Piece.DIARC:
+            return 0
+
+        # elif
+
+        # TODO: implement valid moves
+
+        # check valid moves
+        score = 0
+
+        return score
+
+    # checkScoreDiarcPiece_Flower
+
+    def checkScoreDiarcPiece_Gem( self, move: Board.Move ):
+        """ Check if any points are added from Gem arrangement
+            after placing a Diarc
+
+        """
+        # check if it is a valid move
+        if not self.board.isValidMove( move ):
+            return 0
+
+        # if
+        elif move.piece is not Piece.DIARC:
+            return 0
+
+        # elif
+
+        # TODO: implement valid moves
+
+        # check valid moves
+        score = 0
+
+        return score
+
+    # checkScoreDiarcPiece_Gem
+
+    def checkScoreDiarcPiece_Hourglass( self, move: Board.Move ):
+        """ Check if any points are added from Hourglass arrangement
+            after placing a Diarc
+
+        """
+        # check if it is a valid move
+        if not self.board.isValidMove( move ):
+            return 0
+
+        # if
+        elif move.piece is not Piece.DIARC:
+            return 0
+
+        # elif
+
+        # TODO: implement valid moves
+
+        # check valid moves
+        score = 0
+
+        return score
+
+    # checkScoreDiarcPiece_Hourglass
+
+    def checkScoreDiarcPiece_Triangle( self, move: Board.Move ):
+        """ Check if any points are added from Triangle arrangement
+            after placing a Diarc
+
+        """
+        # check if it is a valid move
+        if not self.board.isValidMove( move ):
+            return 0
+
+        # if
+        elif move.piece is not Piece.DIARC:
+            return 0
+
+        # elif
+
+        row, col = Board.getRowColumn( move.piece, move.location )
+
+        # check for triangles
+        if col % 2 == 0:  # straight up and down
+            if col == 6: # middle of board
+                check_locations = [
+                    [ (Piece.DIARC, 2 * row, col - 1), (Piece.DIARC, 2 * row + 1, col - 1) ],
+                    [ (Piece.DIARC, 2 * row, col + 1), (Piece.DIARC, 2 * row + 1, col + 1) ]
+                ]
+            # if
+            elif col < 6: # right-side of board
+                check_locations = [
+                    [ (Piece.DIARC, 2 * row, col + 1), (Piece.DIARC, 2 * row + 1, col + 1) ],
+                    [ (Piece.DIARC, 2 * row + 1, col - 1), (Piece.DIARC, 2 * row + 2, col - 1) ]
+                ]
+            # elif
+            else:  # col > 6 : left-side of board
+                check_locations = [
+                    [ (Piece.DIARC, 2 * row + 1, col - 1), (Piece.DIARC, 2 * row + 2, col - 1) ],
+                    [ (Piece.DIARC, 2 * row, col + 1), (Piece.DIARC, 2 * row + 1, col + 1) ]
+                ]
+            # else
+
+        else:  # angled to left and right
+            # angled bottom-left to top-right, right-side
+            if row % 2 == 1 and col < 6:
+                check_locations = [
+                    [ (Piece.DIARC, row - 1, col), (Piece.DIARC, row // 2, col + 1) ],
+                    [ (Piece.DIARC, row + 1, col), (Piece.DIARC, row // 2, col - 1) ]
+                ]
+
+            # angled bottom-right to top-left, right-side
+            elif row % 2 == 0 and col < 6:
+                check_locations = [
+                    [ (Piece.DIARC, row - 1, col), (Piece.DIARC, row // 2 - 1, col - 1) ],
+                    [ (Piece.DIARC, row + 1, col), (Piece.DIARC, row // 2, col + 1) ],
+                ]
+
+            # angled bottom-left to top-right, left-side
+            elif row % 2 == 1 and col > 6:
+                check_locations = [
+                    [ (Piece.DIARC, row - 1, col), (Piece.DIARC, row // 2, col - 1) ],
+                    [ (Piece.DIARC, row + 1, col), (Piece.DIARC, row // 2, col + 1) ],
+                ]
+
+            # angled bottom-right to top-left: left-side
+            elif row % 2 == 0 and col > 6:
+                check_locations = [
+                    [ (Piece.DIARC, row - 1, col), (Piece.DIARC, row // 2 - 1, col + 1) ],
+                    [ (Piece.DIARC, row + 1, col), (Piece.DIARC, row // 2, col - 1) ],
+                ]
+
+            else:
+                check_locations = [ ]
+        # if
+
+        # check each of the locations
+        score = 0
+        for triangle_check in check_locations:
+
+            # add points if there is a score
+            if self._checkListofLocationsScores(triangle_check, player=move.player):
+                score += Game.POINT_TRIANGLE
+
+            # if
+        # for
+
+        return score
+
+    # checkScoreDiarcPiece_Triangle
 
     def checkScoreTriarcPiece( self, move: Board.Move ):
         """ Function ot check if a Triarc placement is a scoring play
@@ -402,9 +731,108 @@ class Game:
 
             :return: total score of a particular move
         """
-        return 0
+        score = 0
+
+        # add scores
+        score += self.checkScoreTriarcPiece_Diamond(move)   # TODO: diamond score check
+        score += self.checkScoreTriarcPiece_Gem(move)       # TODO: gem score check
+        score += self.checkScoreTriarcPiece_Pyramid(move)   # TODO: pyramid score check
+        score += self.checkScoreTriarcPiece_Hourglass(move) # TODO: hourglass score check
+        score += self.checkScoreTriarcPiece_Star(move)      # TODO: star score check
+
+        return score
 
     # checkScoreTriarcPiece
+
+    def checkScoreTriarcPiece_Diamond( self, move: Board.Move ):
+        # TODO
+        # check if it is a valid move
+        if not self.board.isValidMove( move ):
+            return 0
+
+        # if
+        
+        if move.piece is not Piece.TRIARC:
+            return 0
+
+        # if
+        
+        score = 0
+        return score
+
+    # checkScoreTriarcPiece_Diamond
+
+    def checkScoreTriarcPiece_Gem( self, move: Board.Move ):
+        # TODO
+        # check if it is a valid move
+        if not self.board.isValidMove( move ):
+            return 0
+
+        # if
+        
+        if move.piece is not Piece.TRIARC:
+            return 0
+
+        # if
+        
+        score = 0
+        return score
+
+    # checkScoreTriarcPiece_Gem
+
+    def checkScoreTriarcPiece_Hourglass( self, move: Board.Move ):
+        # TODO
+        # check if it is a valid move
+        if not self.board.isValidMove( move ):
+            return 0
+
+        # if
+        
+        if move.piece is not Piece.TRIARC:
+            return 0
+
+        # if
+        
+        score = 0
+        return score
+
+    # checkScoreTriarcPiece_Gem
+
+    def checkScoreTriarcPiece_Pyramid( self, move: Board.Move ):
+        # TODO
+        # check if it is a valid move
+        if not self.board.isValidMove( move ):
+            return 0
+
+        # if
+        
+        if move.piece is not Piece.TRIARC:
+            return 0
+
+        # if
+        
+        score = 0
+        return score
+
+    # checkScoreTriarcPiece_Pyramid
+
+    def checkScoreTriarcPiece_Star( self, move: Board.Move ):
+        # TODO
+        # check if it is a valid move
+        if not self.board.isValidMove( move ):
+            return 0
+
+        # if
+        
+        if move.piece is not Piece.TRIARC:
+            return 0
+
+        # if
+        
+        score = 0
+        return score
+
+    # checkScoreTriarcPiece_Star
 
     def isValidMove( self, move: Board.Move ):
         """ Check if move is valid"""
@@ -429,11 +857,22 @@ class Game:
     def playPiece( self, location: int, piece: Piece ):
         """ Play a piece """
         move = Board.Move( location, piece, self.playerOnDeck )
+        score_update = self.checkScore( move )
         success = self.board.playPiece( move )
-        # check turn
-        # update the turn
+
+        # piece was played
         if success:
+            if self.playerOnDeck.number == 1:
+                self.player1Score += score_update
+
+            else:
+                self.player2Score += score_update
+
+            print( f"Player: {self.playerOnDeck.number} | score update = {score_update}" )
+            # update the player turn
             self.updateTurn()
+
+        # if
 
         return success
 
@@ -444,5 +883,7 @@ class Game:
         self.turn = self.turn % 2 + 1
 
     # updateTurn
+
+
 
 # class: Game

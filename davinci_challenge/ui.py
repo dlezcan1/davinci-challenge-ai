@@ -144,7 +144,8 @@ class GameApplication:
                 rotation = -v * 30
 
             elif 12 <= i < 22:  # columns 3 and 5 in
-                xl = xloc_t - 5 * ((v > 0) * lcolsep - (v < 0) * rcolsep) // 2 + 2 * tw2 // 3 - v * 2
+                xl = xloc_t - 5 * (
+                            (v > 0) * lcolsep - (v < 0) * rcolsep) // 2 + 2 * tw2 // 3 - v * 2
                 yl = yloc_t + (i - 12) // 2 * 2 * heightsep + dh // 2
                 rotation = v * 30
 
@@ -188,10 +189,12 @@ class GameApplication:
                 piece.update( hovered=False )
 
             # check for colliding pieces
-            update_piece, _ = self.selectPiece( x, y )
+            update_piece, update_piece_idx = self.selectPiece( x, y )
 
             if update_piece is not None:
                 update_piece.update( hovered=True )
+
+            # if
 
         # if: MouseMotion
 
@@ -239,8 +242,30 @@ class GameApplication:
         self.renderGameInterface()
 
         # blit the pieces onto the screen
-        for piece in self.pieces:
+        for idx, piece in enumerate(self.diarcs):
             piece.blit( self.screen )
+
+            # TODO: remove | for debugging purposes only
+            if piece.hovered:
+                row, col = Board.getRowColumn( piece.pieceType, idx )
+                rowcol_font = self._elementFont.render( f"Diarc: ({row}, {col})", True, COLOR_WHITE )
+                self.screen.blit(
+                    rowcol_font, (
+                                (self.screen.get_width() - rowcol_font.get_width()) - 15,
+                                self.screen.get_height() - 50) )
+        # for: diarcs
+        for idx, piece in enumerate( self.triarcs ):
+            piece.blit( self.screen )
+
+            # TODO: remove | for debugging purposes only
+            if piece.hovered:
+                row, col = Board.getRowColumn( piece.pieceType, idx )
+                rowcol_font = self._elementFont.render( f"Triarc: ({row}, {col})", True, COLOR_WHITE )
+                self.screen.blit(
+                        rowcol_font, (
+                                (self.screen.get_width() - rowcol_font.get_width()) - 15,
+                                self.screen.get_height() - 50) )
+        # for: diarcs
 
         pg.display.update()
 
